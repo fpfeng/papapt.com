@@ -1,0 +1,47 @@
+{%- extends "base.html" %}
+{%- block content %}
+<div class="container col-md-10 col-md-offset-1">
+        <div class='col-md-6 flash-header'>
+            {%- with messages = get_flashed_messages() %}
+            {%- if messages %}
+              {% for message in messages -%}
+                <div class="alert alert-danger flashes">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                {{ message }}
+              {%- endfor %}
+              </div>
+            {%- endif %}
+          {%- endwith %}
+        </div>
+        <div class="col-md-10 col-md-offset-1">
+            <form class="index-search" method="POST" action=" {{ url_for('home.search') }}">
+                <div class="input-group">
+                    {{ g.search_form.hidden_tag() }}
+                    {{ g.search_form.search(class_="form-control", placeholder="可以直接放IMDb和豆瓣链接哦") }}
+                    <span class="input-group-btn">
+                        <button class="btn btn-primary" type="sumbit">给我搜</button>
+                    </span>
+                </div>
+            </form>
+            <div class="col-md-10 col-md-offset-1 hot-keyword">
+              <div class="keyword-item">
+                <span style="vertical-align: text-top; padding-right: 1px;" class="text-danger glyphicon glyphicon-fire"></span><span class="text-danger">热门：</span>
+              </div>
+                {% for r in rows -%}
+                  {%- set k_type = r.keyword_type -%}
+                  {%- set k = r.keyword -%}
+                  {%- if k_type == 'douban' or k_type == 'imdb' %}
+                    <div class="keyword-item">
+                      <span><a class="text-muted" style="text-decoration: none;" href="{{ url_for('rating.by_site_id', website=k_type, site_id=k)}}">{{ r[k_type].title }}</a></span>
+                    </div>
+                  {%- else -%}
+                    <div class="keyword-item">
+                      <span><a class="text-muted" style="text-decoration: none;" href="{{ url_for('search.result', keyword=k) }}">{{ k }}</a></span>
+                    </div>
+                  {% endif -%}
+                {%- endfor %}
+              <p
+            </div>
+        </div>
+</div>
+{% endblock -%}

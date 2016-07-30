@@ -1,0 +1,102 @@
+{%- macro create_id_url(website, id) %}
+    {%- if website == 'imdb' -%}
+        {%- set link = 'http://www.imdb.com/title/' + id|string -%}
+        {%- set site = 'IMDb' -%}
+    {%- else -%}
+        {%- set link = 'https://movie.douban.com/subject/' + id|string -%}
+        {%- set site = '豆瓣' -%}
+    {%- endif -%}
+        <a style="text-decoration: none;" href="{{ link }}" target="_blank">{{ site }}</a>
+{% endmacro -%}
+
+{%- macro create_day_div(day, db_rows, day_index, title_lang) -%}
+    {% if not day -%}
+        {{ create_empty_day() }}
+    {%- else -%}
+        <div class="day">
+            <div class="day-header">
+                <span class="day-num">{{ day }}</span>
+                <span class="chs-dow">{{ day_index|dayofweek }}</span>
+                <div style="clear: both"></div>
+            </div>
+            {%- if db_rows %}
+                {% for r in db_rows -%}
+                    <div class="show-info">
+                    {%- set eng_title = r.tv.title -%}
+                    {%- set s_e = 'S' + '%02d' % r.season + 'E' + '%02d' % r.episode -%}
+                    <p class="show-title" >
+                        <a href="{{ url_for('search.result', keyword=eng_title) }}"><strong>{{ r.tv[title_lang] }}</strong></a>
+                    </p>
+                    <p class="show-episode">
+                        <span>
+                            <a style="text-decoration: none;" class="a-tooltip" title="{{ r.air_date.strftime('%H:%M') + ' 开始播放' + ' 时长 ' + r.tv.runtime|string + ' 分钟' }}" href="{{ url_for('search.result', keyword=eng_title + ' ' + s_e) }}">{{ s_e }}</a>
+                        </span>
+                        <span class="hover-show">
+                            {{ create_id_url('douban', r.tv.douban) }}
+                            {{ create_id_url('imdb', r.tv.imdb) }}
+                        </span>
+                    </p>
+                    </div>
+                {%- endfor %}
+            {% endif -%}
+        </div>
+    {%- endif %}
+{%- endmacro -%}
+
+{%- macro create_week_div(days_of_week, title_lang) %}
+    <div class="week">
+        {%- for day in days_of_week -%}
+            {{ create_day_div(day, rows.get(day), loop.index0, title_lang) }}
+        {% endfor -%}
+    </div>
+{%- endmacro -%}
+
+{%- macro create_empty_day() -%}
+    {{ '<div class="empty-day"></div>'|safe }}
+{%- endmacro -%}
+
+{%- macro create_ustv_pager(text=false) %}
+    {%- set current_year = config.SCHEDULE_CURRENT_YEAR -%}
+    {%- set current_month = config.SCHEDULE_CURRENT_MONTH -%}
+
+    {%- if year == current_year and month == 1 %}
+        {%- set last_month = 12 -%}
+        {%- set next_month = month + 1 -%}
+        {%- set last_year = current_year - 1 -%}
+        {%- set next_year = year -%}
+    {% elif year == current_year - 1 and month == 12 -%}
+        {%- set last_month = 11 -%}
+        {%- set next_month = 1 -%}
+        {%- set last_year = year -%}
+        {%- set next_year = current_year -%}
+    {%- else -%}
+        {%- set last_month = month - 1 -%}
+        {%- set next_month = month + 1 -%}
+        {%- set last_year = year -%}
+        {%- set next_year = year -%}
+    {% endif -%}
+    <div class="ustv-pager">
+        <div class="pager-left">
+            <a href="{{ url_for('ustv.schedule', y=last_year, m=last_month, l=lang) if year == current_year - 1 and month != 1 or year == current_year else '#' }}">
+                <button type="button" class="ustv-left-btn btn btn-default{{ ' disabled' if year == current_year - 1 and month == 1 }}">&laquo; 上月</button>
+            </a>
+        </div>
+        {%- if text %}
+            <div class="pager-header">
+                <span class="header-text"><strong>{{ year }}年{{ month }}月</strong>
+                {%- set lang_switch = {'e':'c', 'c':'e'} -%}
+                    <a class="a-tooltip" style="text-decoration: none" data-html="true" title="点我切换中英剧名<br>点剧名搜全部<br>点集数搜单集<br>以下为北京时间" href="{{ url_for('ustv.schedule', y=year, m=month, l=lang_switch[lang]) }}">
+                        <span style="vertical-align: top;" class="text-warning glyphicon glyphicon-exclamation-sign"></span>
+                    </a>
+            </div>
+        {% endif -%}
+        <div class="pager-right">
+            <a href="{{ url_for('ustv.schedule', y=next_year, m=next_month, l=lang) if year == current_year - 1 or year == current_year and month < current_month + 1 else '#' }}">
+                <button type="button" class="ustv-right-btn btn btn-default{{ ' disabled' if year == current_year and month == current_month + 1 }}">下月 &raquo;</button>
+            </a>
+        </div>
+        {%- if not text %}
+            <div style="padding-bottom: 50px;"></div>
+        {% endif -%}
+    </div>
+{% endmacro -%}

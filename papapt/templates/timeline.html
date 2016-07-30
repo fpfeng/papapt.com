@@ -1,0 +1,44 @@
+{%- from "timeline_macros.html" import create_class_by_from %}
+{%- extends "base.html" %}
+{%- block title %}
+    最新采集 - papapt
+{% endblock -%}
+{%- block content %}
+    <div class="container">
+        <div>
+        <ul class="timeline">
+            {% for r in rows -%}
+            <li>
+                <div class="timeline-t-from">
+                {%- set t_from = r.t_from[:1] -%}
+                {%- set class = 'span-tooltip btn btn-tl-copy' -%}
+                <button title="复制文件名" last-tooltip="nothere" class="{{ class + ' ' + create_class_by_from(t_from) }}">{{ t_from|upper }}</button>
+                </div>
+                <div class="timeline-t-wrap">
+                    <div class="timeline-t-info">
+                        <p class="timeline-t-title"><strong><span class="span-tooltip" title="{{ r.t_d_title }}">{{ r.t_u_title }}</span></strong></p>
+                        <p class="timeline-t-detail">
+                        <span class="text-info tl-cat">{{ r.t_recat|chscat }}</span>
+                        <span class="tl-size">{{ (r.t_size/1024)|round(1) }}<span class="text-muted">GB</span></span>
+                        <span class="span-tooltip tl-addtime" title="{{ r.t_addtime }}">{{ r.t_addtime|chstime }}</span>
+                        <span class="tl-defi text-muted">{{ r.t_defi|defi }}</span>
+                        </p>
+                    </div>
+                </div>
+            </li>
+            {%- endfor %}
+        </ul>
+        </div>
+    </div>
+    <div class="nextpage">
+        <a href="{{ url_for('timeline.pages', page=current_page+1) }}"></a>
+    </div>
+{% endblock -%}
+{%- block scripts %}
+    {{super()}}
+    <script src="https://cdn.bootcss.com/jquery-infinitescroll/2.1.0/jquery.infinitescroll.min.js"></script>
+    <script src="https://cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+    <script>
+        function tl_helper(){$(".span-tooltip").tooltip({animated:"fade",placement:"bottom",container:"body"});var t=new Clipboard(".btn-tl-copy",{text:function(t){return $(t).parent().parent().find(".timeline-t-title").text()}});t.on("success",function(t){$("[last-tooltip=here]").attr("title","复制文件名").tooltip("fixTitle"),$("[last-tooltip=here]").attr("last-tooltip","nothere"),$(t.trigger).attr("title","已复制文件名").tooltip("fixTitle").tooltip("show"),$(t.trigger).attr("last-tooltip","here")})}$(document).ready(function(){$(".timeline").infinitescroll({navSelector:"div.nextpage",nextSelector:"div.nextpage a:last",itemSelector:"ul.timeline",maxPage:{{ config.TIMELINE_MAX_PAGE }},bufferPx:5,extraScrollPx:50,loading:{speed:"fast",selector:null,img:"data:image/gif;base64,R0lGODlhAQABAHAAACH5BAUAAAAALAAAAAABAAEAAAICRAEAOw==",msgText:"",finishedMsg:'<div class="max-page-reach text-muted"><h3>你已经看完最新的种子了</h3></div>'}},function(){tl_helper()}),tl_helper()});
+    </script>
+{% endblock -%}

@@ -1,0 +1,7 @@
+{%- macro create_class_by_from(from_letter) %}
+    {%- if from_letter == 'h' %}
+        {{ 'tl-from-h' }}
+    {%- else -%}
+        {{ 'tl-from-t' }}
+    {% endif -%}
+{% endmacro -%}

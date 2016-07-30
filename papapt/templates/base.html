@@ -1,0 +1,46 @@
+{%- extends "bootstrap/base.html" %}
+{%- block metas -%}
+{%- endblock -%}
+{% block head %}
+  {{super()}}
+  <link rel="icon" type="image/png" href="{{ url_for('home.static', filename='favicon.png') }}">
+{% endblock %}
+{%- block title %}papapt{% endblock %}
+{% block styles -%}
+    {{super()}}  {# do not forget to call super or Bootstrap's own stylesheetswill disappear! #}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('home.static', filename='new.css') }}">
+{%- endblock %}
+{# Finally, round things out with navigation #}
+{% block navbar -%}
+<div class="navbar navbar-default">
+  <div class="container col-md-10 col-md-offset-1">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">papapt</a>
+    </div>
+    <ul class="nav navbar-nav">
+      <li><a href="{{ url_for('home.index') }}">首页</a></li>
+      <li><a href="{{ url_for('timeline.pages') }}">最新采集</a></li>
+      <li><a href="{{ url_for('ustv.schedule', y=config.SCHEDULE_CURRENT_YEAR, m=config.SCHEDULE_CURRENT_MONTH, l='e') }}">美剧时间表</a></li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">TOP250
+        <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          <li><a href="{{ url_for('top.top_rank', site='douban') }}">豆瓣</a></li>
+          <li><a href="{{ url_for('top.top_rank', site='imdb') }}">IMDb</a></li>
+        </ul>
+      </li>
+      </ul>
+        {%- if request.url_rule.endpoint != 'home.index' %}
+          <form class="navbar-form navbar-right nav-search" method="POST" action="/search_query">
+            <div class="input-group">
+              {{ g.search_form.hidden_tag() }}
+              {{ g.search_form.search(class_="form-control") }}
+              <span class="input-group-btn">
+                <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+              </span>
+            </div>
+          </form>
+        {% endif -%}
+  </div>
+</div>
+{%- endblock %}

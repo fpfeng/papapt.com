@@ -1,0 +1,31 @@
+{%- from "tv_macros.html" import create_day_div with context %}
+{%- from "tv_macros.html" import create_week_div with context %}
+{%- from "tv_macros.html" import create_empty_day %}
+{%- from "tv_macros.html" import create_ustv_pager with context %}
+{%- extends "base.html" %}
+{%- block title %}
+    {{ year }}年{{ month }}月美剧时间表 - papapt
+{% endblock -%}
+{% block content -%}
+    <div class="container col-md-10 col-md-offset-1">
+        {{- create_ustv_pager(text=true) -}}
+        <div class="month">
+            {%- if lang == 'e' %}
+                {%- set title_lang = 'title' -%}
+            {%- else -%}
+                {%- set title_lang = 'chs_title' -%}
+            {% endif -%}
+            {%- for week in cal -%}
+                {{ create_week_div(week, title_lang) }}
+            {%- endfor -%}
+        </div>
+        {{ create_ustv_pager(text=false) -}}
+    </div>
+{% endblock -%}
+
+{%- block scripts -%}
+    {{super()}}
+        <script>
+            $(document).ready(function(){$(".a-tooltip").tooltip({animated:"fade",placement:"right",container:"body"})});
+        </script>
+{%- endblock -%}

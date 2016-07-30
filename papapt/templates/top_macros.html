@@ -1,0 +1,42 @@
+{%- macro create_top_pager(which_way) %}
+    {%- set site = request.args.site -%}
+    {%- if request.args.page %}
+        {%- set page = request.args.page|int -%}
+    {%- else -%}
+        {%- set page = 1 -%}
+    {% endif -%}
+    {%- if which_way == 'prev' %}
+        {%- set span_arrow = '&laquo;' -%}
+        {%- set expect_page = page - 1 -%}
+    {% elif which_way == 'next' -%}
+        {%- set span_arrow = '&raquo;' -%}
+        {%- set expect_page = page + 1 -%}
+    {% endif -%}
+    {%- if which_way == 'prev' and page == 1 or which_way == 'next' and page == 10 %}
+    <li class="disabled">
+      <a href="#">
+        <span aria-hidden="true">{{ span_arrow|safe }}</span>
+      </a>
+    </li>
+    {%- else -%}
+    <li>
+      <a href="{{ url_for('top.top_rank', site=site, page=expect_page) }}">
+        <span aria-hidden="true">{{ span_arrow|safe }}</span>
+      </a>
+    </li>
+    {% endif -%}
+{% endmacro -%}
+
+{%- macro create_top_page_index(expect_page) -%}
+    {%- set site = request.args.site -%}
+    {%- if request.args.page %}
+        {%- set page = request.args.page|int -%}
+    {%- else -%}
+        {%- set page = 1 -%}
+    {% endif -%}
+        {%- if page != expect_page %}
+            <li><a href="{{ url_for('top.top_rank', site=site, page=expect_page) }}">{{ expect_page }}</a></li>
+        {%- elif page == expect_page %}
+            <li class="active"><a href="#">{{ expect_page }}</a><li>
+        {%- endif -%}
+{%- endmacro -%}

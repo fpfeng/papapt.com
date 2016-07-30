@@ -1,0 +1,102 @@
+{%- from "result_macros.html" import create_tab_dropdown with context %}
+{%- from "result_macros.html" import create_tab_item with context %}
+{%- from "result_macros.html" import create_header_item with context %}
+{%- from "result_macros.html" import create_defi_a_tag %}
+{%- from "result_macros.html" import set_color_by_size %}
+{%- from "result_macros.html" import set_color_by_tracker %}
+{%- from "result_macros.html" import create_date_a_tag %}
+{%- from "macros.html" import make_pagination %}
+{%- extends "base.html" %}
+{%- block title %}
+    {{ keyword }} - 搜索 - papapt
+{% endblock -%}
+{% block content -%}
+    {%- set cat = request.args.cat -%}
+    {%- if results or cat %}
+        {%- set order = request.args.order -%}
+        {%- set way = request.args.sort -%}
+        {%- if not counts -%}
+            {%- set all_items_clickable = true -%}
+        {%- else -%}
+            {%- set all_items_clickable = false -%}
+        {% endif %}
+        <div class="container col-md-10 col-md-offset-1">
+            <h4 class="search-header">搜索<mark>{{ keyword }}</mark>的相关种子:</h4>
+        </div>
+        <div class="container">
+            <ul class="nav nav-tabs">
+                {%- set loose_pack = ['散装','打包'] -%}
+                {{ create_tab_item(cat, 'bd', all_items_clickable) -}}
+                {{ create_tab_item(cat, 'mov', all_items_clickable) -}}
+                {{ create_tab_dropdown(cat, ['cntv', 'cntvp'], 'cntv'|chscat, loose_pack, all_items_clickable) -}}
+                {{ create_tab_dropdown(cat, ['eustv', 'eustvp'], 'eustv'|chscat, loose_pack, all_items_clickable) -}}
+                {{ create_tab_dropdown(cat, ['jktv', 'jktvp'], 'jktv'|chscat, loose_pack, all_items_clickable) -}}
+                {{ create_tab_item(cat, 'doc', all_items_clickable) -}}
+                {{ create_tab_dropdown(cat, ['spo', 'var'], '节目', ['spo'|chscat, 'var'|chscat], all_items_clickable) -}}
+                {{ create_tab_item(cat, 'ami', all_items_clickable) -}}
+                {{ create_tab_dropdown(cat, ['mob', 'mus', 'other'], 'other'|chscat, ['mob'|chscat, 'mus'|chscat, other|chscat], all_items_clickable) }}
+            </ul>
+        </div>
+        <div class="container">
+            <div class="torrent_warp col-md-10 col-md-offset-1">
+            <div class="torrent_header">
+                <ul class="header">
+                    {%- if not results %}
+                        {%- set icon_unclickable = true -%}
+                    {% endif -%}
+                    {{ create_header_item(order, 't_from', way, '来源', 'flag', icon_unclickable) }}
+                    {{ create_header_item(order, 't_u_title', way, '文件名', 'font', icon_unclickable) }}
+                    {{ create_header_item(order, 't_defi', way, '画质', 'camera', icon_unclickable) }}
+                    {{ create_header_item(order, 't_size', way, '大小', 'folder-open', icon_unclickable) }}
+                    {{ create_header_item(order, 't_seed', way, '做种', 'arrow-up', icon_unclickable) }}
+                    {{ create_header_item(order, 't_peer', way, '正在下载', 'arrow-down', icon_unclickable) }}
+                    {{ create_header_item(order, 't_addtime', way, '存活时间', 'time', icon_unclickable) }}
+                    {{ create_header_item(order, 't_snatch', way, '已完成', 'ok', icon_unclickable) }}
+                </ul>
+            </div>
+            {% for torrent in results -%}
+                <div class="torrent_item table-bordered">
+                    <ul class="torrent_info">
+                        <li class="t_from">
+                            <button title="复制文件名" last-tooltip="nothere" class="a-tooltip btn btn-sm btn-copy {{ set_color_by_tracker(torrent.t_from) }}">{{ torrent.t_from[:1]|upper }}</button>
+                        </li>
+                        <li class="t_title">
+                            <p class="utitle"><strong>{{ torrent.t_u_title }}</strong></p>
+                            <p class="text-muted dtitle">{{ torrent.t_d_title }}</p>
+                        </li>
+                        <li class="t_defi">{{ create_defi_a_tag(torrent.t_defi) }}</li>
+                        <li class="t_size">
+                            <p><span><strong>{{ (torrent.t_size/1024)|round(1) }}</strong></span><span class="text-muted"> GB</span></p>
+                        </li>
+                        <li class="t_seed">{{ set_color_by_size(torrent.t_seed) }}</li>
+                        <li class="t_peer"><p class="text-info">{{ torrent.t_peer }}</p></li>
+                        <li class="t_addtime"><p>{{ create_date_a_tag(torrent.t_addtime) }}</p></li>
+                        <li class="t_snatch"><p class="text-muted">{{ torrent.t_snatch }}</p></li>
+                    </ul>
+                </div>
+            {%- endfor %}
+            </div>
+        </div>
+        {{ make_pagination(pagination) }}
+    {%- else -%}
+        <div class="container col-md-10 col-md-offset-1">
+            <div class="jumbotron">
+                <h2>没有找到关于<mark>{{ keyword }}</mark>的种子</h2>
+                <p>建议：</p>
+                <ul>
+                  <li>检查拼写，有效关键词为中英文和数字。</li>
+                  <li>增减关键词长度。</li>
+                  <li>更换关键词。</li>
+                </ul>
+            </div>
+        </div>
+    {% endif -%}
+{% endblock -%}
+
+{%- block scripts %}
+    {{super()}}
+    <script src="https://cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+    <script>
+        $(document).ready(function(){$(".a-tooltip").tooltip({animated:"fade",placement:"top",container:"body"});var t=new Clipboard(".btn-copy",{text:function(t){return $(t).parent().parent().find(".utitle").text()}});t.on("success",function(t){$("[last-tooltip=here]").attr("title","复制文件名").tooltip("fixTitle"),$("[last-tooltip=here]").attr("last-tooltip","nothere"),$(t.trigger).attr("title","已复制文件名").tooltip("fixTitle").tooltip("show"),$(t.trigger).attr("last-tooltip","here")})});
+    </script>
+{% endblock -%}

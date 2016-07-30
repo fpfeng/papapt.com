@@ -1,0 +1,142 @@
+{%- macro create_tab_item(current_cat, target_cat, all_item_clickable=none) -%}
+    {%- set class_name = 'nav-item' -%}
+    {%- if counts[target_cat] or all_item_clickable %}
+        <li class="nav-item">
+            {{- create_cat_a_tag(current_cat, target_cat, 'nav-link', target_cat|chscat, all_item_clickable) }}
+        </li>
+    {%- else -%}
+        <li class="nav-item disabled">
+            <a href="#">{{ target_cat|chscat }}</a>
+        </li>
+    {%- endif -%}
+{%- endmacro -%}
+
+{% macro set_color_by_tracker(tracker) %}
+    {%- if tracker == 'hdw' %}
+        {{ 'btn-info' }} 
+    {%- else  -%}
+        {{ 'btn-warning' }}
+    {% endif -%}
+{% endmacro -%}
+
+{%- macro create_date_a_tag(date) %}
+    <a class="no_underline a-tooltip" href="#" onclick="return false;" title="{{ date }}">{{ date|chstime }}</a>
+{% endmacro -%}
+
+{%- macro dispaly_cat_number_span(all_item_clickable, cat_name_or_number, already_have_count_number=none) -%}
+    {%- if not all_item_clickable and not already_have_count_number -%}
+        {{ '<span class="badge">'|safe + counts[cat_name_or_number]|string + '</span>'|safe }}
+    {%- elif already_have_count_number and cat_name_or_number %}
+        {{ '<span class="badge">'|safe + cat_name_or_number|string + '</span>'|safe }}
+    {% endif -%}
+{% endmacro -%}
+
+{%- macro create_cat_a_tag(current_cat, cat_name, class_name, chs_name, all_item_clickable) %}
+    {%- with url_args = {},
+            _ = url_args.update(request.view_args if not endpoint else {}),
+            __ = url_args.update(request.args if not endpoint else {}),
+            ___ = url_args.pop('cat') if request.args.cat and request.args.cat == cat_name else 
+            url_args.update({'cat':cat_name}),
+            ____ = url_args.pop('page') if url_args.page %}
+            <a class="{{ compare_add_active_css_class(current_cat, cat_name, class_name, ' active' ) }}" href="{{ url_for('search.result', **url_args) }}">{{ chs_name }} {{ dispaly_cat_number_span(all_item_clickable, cat_name) }}</a>
+    {%- endwith -%}
+{% endmacro -%}
+
+{%- macro create_tab_dropdown(current_cat, dropdown_cat_list, chs_toggle_title, chs_cat_title_list=[], all_item_clickable=none) -%}
+    {%- set rows_of_cat_list = [0] -%}
+    {% for c in dropdown_cat_list -%}
+        {%- set _ = rows_of_cat_list.append(rows_of_cat_list.pop() + counts.get(c, 0)) -%}
+    {%- endfor %}
+    {%- if rows_of_cat_list[0] or all_item_clickable %}
+        {{ create_tab_menu(current_cat, dropdown_cat_list, chs_toggle_title, rows_of_cat_list[0], chs_cat_title_list, all_item_clickable) }}
+    {%- else -%}
+        {{ create_disable_dropdown(chs_toggle_title) }}
+    {% endif -%}
+{%- endmacro -%}
+
+{%- macro create_tab_menu(current_cat, dropdown_cat_list, chs_toggle_title, row_count, chs_cat_title_list, all_item_clickable) -%}
+    <li class="nav-item dropdown">
+        {{ create_tab_menu_toggle(current_cat, dropdown_cat_list, chs_toggle_title, row_count, all_item_clickable) }}
+        <ul class="dropdown-menu">
+        {%- for c in dropdown_cat_list -%}
+            {%- if counts[c] or all_item_clickable -%}
+                {%- if chs_cat_title_list -%}
+                    {%- set c_index = dropdown_cat_list.index(c) -%}
+                    {{ create_cat_a_tag(current_cat, c, 'dropdown-item', chs_cat_title_list[c_index], all_item_clickable) -}}
+                {%- else -%}
+                    {{ create_cat_a_tag(current_cat, c, 'dropdown-item', c|chscat) -}}
+                {% endif -%}
+            {% endif -%}
+        {%- endfor %}
+        </ul>
+    </li>
+{%- endmacro -%}
+
+{%- macro create_tab_menu_toggle(current_cat, dropdown_cat_list, chs_toggle_title, row_count, all_item_clickable) -%}
+    {%- set class = 'nav-link dropdown-toggle' -%}
+        {%- if current_cat in dropdown_cat_list %}
+            {%- set class = 'nav-link dropdown-toggle active' -%}
+        {% endif -%}
+        <a class="{{ class }}" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{ chs_toggle_title }} {{ dispaly_cat_number_span(all_item_clickable, row_count, already_have_count_number=true) }}</a>
+{%- endmacro -%}
+
+{%- macro create_disable_dropdown(chs_toggle_title) -%}
+    <li class="nav-item dropdown disabled">
+        <a href="#">{{ chs_toggle_title }}</a>
+    </li>
+{%- endmacro -%}
+
+{% macro create_defi_a_tag(defi_int) %}
+    <a class="no_underline a-tooltip" href="#" onclick="return false;" title="自动识别 误差难免"><span class="text-muted">{{ defi_int|defi }}</span></a>
+{% endmacro %}
+
+{%- macro set_color_by_size(number) %}
+    {%- if number < 10 %}
+        <p class="text-danger"><strong>{{ number }}</strong></p>
+    {% elif number >= 10 and number <= 30 -%}
+        <p class="text-warning"><strong>{{ number }}</strong></p>
+    {%- elif number > 30 %}
+        <p class="text-primary"><strong>{{ number }}</strong></p>
+    {% endif -%}
+{% endmacro -%}
+
+{%- macro compare_add_active_css_class(comp_str1, comp_str2, default_class, active_tag) %}
+    {%- if comp_str1 == comp_str2 -%}
+        {{ default_class + active_tag }}
+    {%- else -%}
+        {{ default_class }}
+    {%- endif -%}
+{% endmacro -%}
+
+{%- macro create_header_item(current_order, target_order, current_sort_way, chs_order_title, order_icon, icon_unclickable=false) %}
+    {%- set last_underscore_index = target_order.rfind('_') -%}
+    {%- set short_class = 'header-' + target_order[last_underscore_index + 1:] -%}
+    {%- if not icon_unclickable %}
+        <li class="{{ compare_add_active_css_class(current_order, target_order, short_class, ' active') }}">
+            {{ create_order_a_tag(current_order, target_order, current_sort_way, order_icon, chs_order_title) -}}
+        </li>
+    {%- else -%}
+        <li class="{{ short_class }}">
+            <a class="a-tooltip" href="#" title="搜索结果为空"><span class="glyphicon text-muted glyphicon-{{ order_icon }}"></span></a>
+        </li>
+    {% endif -%}
+{%- endmacro -%}
+
+{%- macro create_order_a_tag(current_order, target_order, current_sort_way, order_icon, chs_order_title) %}
+    {%- with url_args = {},
+            _ = url_args.update(request.view_args if not endpoint else {}),
+            __ = url_args.update(request.args if not endpoint else {}),
+            ___ = url_args.update(args),
+            ____ = url_args.update({'sort':'des'} if current_sort_way == 'asc' or current_sort_way == '' else {'sort':'asc'}) if current_order == target_order else url_args.update({'order':target_order}),
+            _____ = url_args.pop('page') if url_args.page %}
+    {%- set glyphicon_tail = 'sort-by-attributes-alt' -%}
+    {%- if current_sort_way == 'asc' %}
+        {%- set glyphicon_tail = 'sort-by-attributes' -%}
+    {% endif -%}
+    {%- if current_order == target_order -%}
+        <a class="a-tooltip" href="{{ url_for('search.result', **url_args) }}" title="猛击按{{ chs_order_title }}排序"><span class="glyphicon glyphicon-{{ order_icon }} active-cat"></span><small><span class="glyphicon glyphicon-{{ glyphicon_tail }} active-cat"></span></small></a>
+    {%- else -%}
+        <a class="a-tooltip" href="{{ url_for('search.result', **url_args) }}" title="猛击按{{ chs_order_title }}排序"><span class="glyphicon inactive-cat glyphicon-{{ order_icon }}"></span></a>
+    {%- endif %}
+    {% endwith -%}
+{% endmacro -%}

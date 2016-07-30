@@ -1,0 +1,29 @@
+class Config:
+    WTF_CSRF_SSL_STRICT = False
+    SECRET_KEY = 'key'
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
+    CELERY_BROKER_URL = 'redis://:password@localhost:6379/0'
+    CELERY_RESULT_BACKEND = 'redis://:passwd@localhost:6379/0'
+    CAT_COUNT_LIMIT_MAX_ITEM = 200
+    ITEM_PER_PAGE = 30
+    SCHEDULE_CURRENT_YEAR = 2016
+    SCHEDULE_CURRENT_MONTH = 6
+    BOOTSTRAP_CDN_FORCE_SSL = True
+    TIMELINE_MAX_PAGE = 10
+    INDEX_KEYWORD_PERIOD = 2
+    INDEX_MAX_KEYWORD = 5
+
+
+class Test(Config):
+    SQLALCHEMY_DATABASE_URI ='mysql://user:password@localhost/pTest?charset=utf8'
+    DEBUG = True
+
+
+class Product(Config):
+    SQLALCHEMY_DATABASE_URI ='mysql://user:password@localhost/pProduct?charset=utf8'
+
+
+config = {
+    'product':Product,
+    'test':Test
+}

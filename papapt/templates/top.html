@@ -1,0 +1,33 @@
+{%- from "top_macros.html" import create_top_page_index %}
+{%- from "top_macros.html" import create_top_pager %}
+{%- extends "base.html" %}
+{%- block title%} 
+    TOP250 - papapt
+{% endblock -%}
+{%- block content -%}
+    <div class="container">
+        <ul class="top-items col-md-12" style="list-style-type: none;">
+            {% for item in result -%}
+                <li class="top-item">
+                <div class="item-warp table-bordered col-md-6 col-md-offset-3">
+                    <span class="top-item-left text-muted">{{ item.rank }}</span>
+                    <div class="top-item-center">
+                        <a href="{{ url_for('rating.by_site_id', website=site, site_id=item[site].web_id) }}"><span class="top-item-title">{{ item[site].title }}</span></a><span class="top-item-year text-muted">({{ item[site].year }})</span><br>
+                        <span class="top-item-genre text-muted">{{ item[site].genre }}</span><span class="top-item-country text-muted">{{ item[site].country }}</span>
+                    </div>
+                    <span class="top-item-right col-md-2 text-success">{{ item[site].rating }}</span>
+                </div>
+                </li>
+            {%- endfor %}
+        </ul>
+        <div class="pagination-centered col-md-6 col-md-offset-3">
+            <ul class="pagination pagination-sm">
+            {{ create_top_pager('prev') -}}
+            {% for i in range(1,11) -%}
+                {{- create_top_page_index(i) }}
+            {%- endfor %}
+            {{ create_top_pager('next') -}}
+            </ul>
+        </div>
+    </div>
+{% endblock %}
