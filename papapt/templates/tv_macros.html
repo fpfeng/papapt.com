@@ -69,6 +69,11 @@
         {%- set next_month = 1 -%}
         {%- set last_year = year -%}
         {%- set next_year = current_year -%}
+    {% elif year == current_year and month == 12 -%}
+        {%- set last_month = 12 -%}
+        {%- set next_month = 1 -%}
+        {%- set last_year = current_year -%}
+        {%- set next_year = current_year + 1 -%}
     {%- else -%}
         {%- set last_month = month - 1 -%}
         {%- set next_month = month + 1 -%}

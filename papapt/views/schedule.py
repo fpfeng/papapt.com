@@ -17,7 +17,7 @@ def schedule():
     month = request.args.get('m', app_month, type=int)
     title_lang = request.args.get('l', 'e')
 
-    if (year == app_year - 1 and 0 < month < 13 or
+    if (app_year - 1 <= year <= app_year + 1 and 0 < month < 13 or
         year == app_year and month < app_month + 2) \
             and title_lang in ['c', 'e']:
 
